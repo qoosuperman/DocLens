@@ -8,15 +8,16 @@ import httpx2
 import openai
 import pytest
 
-from doclens.extraction import ExtractionError, extract_invoice
+from doclens.extraction.extract import ExtractionError, extract_invoice
 from doclens.schemas.invoice import Invoice, LineItem
 
 
 class FakeModel:
     """Returns pre-written raw outputs in order and records every request it receives."""
 
-    def __init__(self, outputs: list[str]) -> None:
+    def __init__(self, outputs: list[str], status_code: int = 200) -> None:
         self._outputs = list(outputs)
+        self._status_code = status_code
         self.requests: list[dict[str, Any]] = []
 
     def client(self) -> openai.OpenAI:
@@ -25,6 +26,8 @@ class FakeModel:
 
     def _handle(self, request: httpx2.Request) -> httpx2.Response:
         self.requests.append(json.loads(request.content))
+        if self._status_code != 200:
+            return httpx2.Response(self._status_code, json={"error": {"message": "fake error"}})
         content = self._outputs.pop(0)
         return httpx2.Response(
             200,
@@ -152,3 +155,12 @@ def test_document_is_sent_only_in_user_message_with_strict_schema(image: Path) -
     assert user["content"][0]["image_url"]["url"].startswith("data:image/png;base64,")
     assert request["model"] == "gpt-4o-mini"
     assert request["response_format"]["json_schema"]["strict"] is True
+
+
+def test_api_errors_are_not_reported_as_validation_failures(image: Path) -> None:
+    fake = FakeModel([], status_code=401)
+
+    with pytest.raises(openai.AuthenticationError):
+        extract_invoice(image, fake.client(), model="gpt-4o-mini", max_retries=2)
+
+    assert len(fake.requests) == 1

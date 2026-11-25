@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from doclens.schemas.invoice import Invoice, LineItem
 
 
-def _decimal(value: float) -> Decimal:
+def _float_to_decimal(value: float) -> Decimal:
     return Decimal(str(value))
 
 
@@ -69,15 +69,15 @@ class ExtractedInvoice(BaseModel):
             line_items=[
                 LineItem(
                     description=item.description,
-                    quantity=_decimal(item.quantity),
-                    unit_price=_decimal(item.unit_price),
-                    amount=_decimal(item.amount),
+                    quantity=_float_to_decimal(item.quantity),
+                    unit_price=_float_to_decimal(item.unit_price),
+                    amount=_float_to_decimal(item.amount),
                 )
                 for item in self.line_items
             ],
-            subtotal=_decimal(self.subtotal),
-            tax=_decimal(self.tax),
-            total=_decimal(self.total),
+            subtotal=_float_to_decimal(self.subtotal),
+            tax=_float_to_decimal(self.tax),
+            total=_float_to_decimal(self.total),
         )
 
 

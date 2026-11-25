@@ -54,6 +54,10 @@ def extract_invoice(
             ],
         )
     except InstructorRetryException as error:
+        # Instructor wraps every failure, API errors included; only validation failures
+        # count as an extraction failure. API errors (auth, 429, 5xx) surface as themselves.
+        if isinstance(error.__cause__, openai.APIError):
+            raise error.__cause__ from None
         raise ExtractionError(
             f"擷取結果重試 {max_retries} 次後仍無法通過格式驗證：{error}"
         ) from error
