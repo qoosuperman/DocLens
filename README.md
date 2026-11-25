@@ -37,3 +37,16 @@ poetry run python -m doclens.synthetic --count 20 --seed 42
 | `--out` | `data/synthetic` | 輸出目錄（不進版控） |
 | `--error-ratio` | 0.5 | 注入錯誤的比例；有錯的發票平均分給 5 種錯誤：賣方統編檢查碼、品項小計、銷售額、總計、prompt injection（備註印上誘導模型的文字） |
 | `--font` | `/System/Library/Fonts/STHeiti Medium.ttc` | CJK 字型路徑；非 macOS 需自行指定 |
+
+## 擷取
+
+用 OpenAI 多模態模型擷取一張發票圖片（PNG/JPG），印出擷取結果：發票欄位、看不清楚的欄位（`unreadable_fields`）、是否偵測到對 AI 下指令的文字（`instruction_text_detected`）。需要在 `.env` 設定 `OPENAI_API_KEY`。
+
+```bash
+poetry run python -m doclens.extraction data/synthetic/<id>.png
+```
+
+| 設定（`.env`） | 預設 | 說明 |
+| --- | --- | --- |
+| `OPENAI_MODEL` | `gpt-4o-mini` | 擷取用的模型 |
+| `EXTRACTION_MAX_RETRIES` | 2 | 輸出格式驗證失敗時，把錯誤回饋給模型重問的次數；用完仍失敗會丟出 `ExtractionError` |

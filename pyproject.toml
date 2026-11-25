@@ -11,6 +11,8 @@ python = "^3.12"
 pydantic = "^2.9"
 pydantic-settings = "^2.6"
 pillow = "^13.0.0"
+instructor = "^1.17.0"
+openai = "^3.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"
