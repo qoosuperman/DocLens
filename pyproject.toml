@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "doclens"
+version = "0.1.0"
+description = "AI document automation for invoices and purchase orders"
+authors = ["Anthony Chao"]
+readme = "README.md"
+packages = [{ include = "doclens", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pydantic = "^2.9"
+pydantic-settings = "^2.6"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3"
+ruff = "^0.8"
+mypy = "^1.13"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
