@@ -80,9 +80,9 @@ def generate_invoices(count: int, seed: int, error_ratio: float = 0.5) -> list[S
         raise ValueError(f"error_ratio must be between 0 and 1, got {error_ratio}")
     rng = random.Random(seed)
     error_count = round(count * error_ratio)
-    error_types: list[ErrorType] = [
-        _INJECTED_ERRORS[index % len(_INJECTED_ERRORS)] for index in range(error_count)
-    ]
+    # Random cycle order, so leftovers in a batch that isn't a multiple of 5 vary by seed.
+    cycle = rng.sample(_INJECTED_ERRORS, len(_INJECTED_ERRORS))
+    error_types: list[ErrorType] = [cycle[index % len(cycle)] for index in range(error_count)]
     error_types += [ErrorType.NONE] * (count - error_count)
     rng.shuffle(error_types)
     return [

@@ -54,3 +54,12 @@ def test_gold_label_lists_expected_review_reasons() -> None:
     }
     for synthetic in generate_invoices(count=12, seed=3):
         assert synthetic.expected_review_reasons == expected[synthetic.error_type]
+
+
+def test_small_batches_still_cover_every_error_type_across_seeds() -> None:
+    seen = {
+        synthetic.error_type
+        for seed in SEEDS
+        for synthetic in generate_invoices(count=2, seed=seed, error_ratio=1)
+    }
+    assert seen == set(EXPECTED_VIOLATIONS) - {ErrorType.NONE}
