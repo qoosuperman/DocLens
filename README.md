@@ -21,3 +21,19 @@ poetry install
 poetry run pytest
 poetry run ruff check . && poetry run mypy src tests
 ```
+
+## 合成發票
+
+產生附標準答案的三聯式統一發票，給 eval 與手動測試用。每張輸出 `<id>.png`、`<id>.pdf` 與 `<id>.json`（標準答案：發票上印的欄位、注入的錯誤類型、預期觸發的送審原因）。
+
+```bash
+poetry run python -m doclens.synthetic --count 20 --seed 42
+```
+
+| 參數 | 預設 | 說明 |
+| --- | --- | --- |
+| `--count` | 20 | 發票張數 |
+| `--seed` | 0 | 同一個 seed 產生的檔案完全相同 |
+| `--out` | `data/synthetic` | 輸出目錄（不進版控） |
+| `--error-ratio` | 0.5 | 注入錯誤的比例；有錯的發票平均分給 5 種錯誤：賣方統編檢查碼、品項小計、銷售額、總計、prompt injection（備註印上誘導模型的文字） |
+| `--font` | `/System/Library/Fonts/STHeiti Medium.ttc` | CJK 字型路徑；非 macOS 需自行指定 |
