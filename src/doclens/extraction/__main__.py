@@ -1,4 +1,4 @@
-"""Extract one invoice image: `python -m doclens.extraction invoice.png`."""
+"""擷取一張發票圖片：`python -m doclens.extraction invoice.png`。"""
 
 import argparse
 import sys

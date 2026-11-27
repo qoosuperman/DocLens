@@ -1,4 +1,4 @@
-"""Extract a structured invoice from an image with an OpenAI multimodal model."""
+"""用 OpenAI 多模態模型，從發票圖片擷取結構化資料。"""
 
 import base64
 from pathlib import Path
@@ -23,7 +23,7 @@ _MEDIA_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg"
 
 
 class ExtractionError(Exception):
-    """The model output still failed validation after every allowed retry."""
+    """用完所有重試次數後，模型輸出仍無法通過驗證。"""
 
 
 def extract_invoice(
@@ -34,9 +34,9 @@ def extract_invoice(
         raise ValueError(f"不支援的圖片格式 {image.suffix}，只接受 PNG 或 JPG")
     encoded = base64.b64encode(image.read_bytes()).decode("ascii")
 
-    structured = _structured_client(client)
+    structured_client = _structured_client(client)
     try:
-        return structured.chat.completions.create(
+        return structured_client.chat.completions.create(
             model=model,
             response_model=ExtractionResult,
             max_retries=max_retries,
@@ -54,8 +54,8 @@ def extract_invoice(
             ],
         )
     except InstructorRetryException as error:
-        # Instructor wraps every failure, API errors included; only validation failures
-        # count as an extraction failure. API errors (auth, 429, 5xx) surface as themselves.
+        # Instructor 會把所有失敗都包起來，包括 API 錯誤；只有驗證失敗才算擷取失敗。
+        # API 錯誤（認證、429、5xx）原樣丟出。
         if isinstance(error.__cause__, openai.APIError):
             raise error.__cause__ from None
         raise ExtractionError(
@@ -64,8 +64,9 @@ def extract_invoice(
 
 
 def _structured_client(client: openai.OpenAI) -> instructor.Instructor:
-    # Instructor's JSON_SCHEMA mode sends `response_format` without `strict`, so OpenAI
-    # would only treat the schema as a hint. Turn strict structured outputs on here.
+    # 一般會用 `instructor.from_provider` 建立 client，但它送出的 `response_format` 不帶
+    # `strict`，OpenAI 只把 schema 當參考、不強制遵守。所以改用 `instructor.Instructor`
+    # 自己組，在送出前補上 `strict`。
     def create(**kwargs: Any) -> Any:
         response_format = kwargs.get("response_format")
         if response_format is not None:

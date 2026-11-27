@@ -1,8 +1,7 @@
-"""What the LLM returns for one invoice image.
+"""LLM 針對一張發票圖片回傳的內容。
 
-Kept separate from the `Invoice` domain model: OpenAI strict structured outputs cannot
-express `Decimal` or regex constraints reliably, so amounts are plain numbers here and are
-converted (and validated against `Invoice`) after extraction.
+跟 `Invoice` 領域模型分開：OpenAI strict structured outputs 無法可靠表達 `Decimal` 或
+regex 約束，所以這裡的金額用一般數字，擷取後再轉換（並用 `Invoice` 驗證）。
 """
 
 from datetime import date
@@ -13,6 +12,13 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from doclens.schemas.invoice import Invoice, LineItem
 
 
+# 先轉 str，拿回模型印出的數字；直接 Decimal(float) 會帶進二進位誤差，讓加總檢查誤判。
+#
+# | 模型輸出 | Decimal(v)                       | Decimal(str(v)) |
+# |----------|----------------------------------|-----------------|
+# | 0.1      | 0.1000000000000000055511151231…  | 0.1             |
+# | 19.548   | 19.547999999999998266275724745…  | 19.548          |
+# | 1200.0   | 1200                             | 1200.0          |
 def _float_to_decimal(value: float) -> Decimal:
     return Decimal(str(value))
 
@@ -49,8 +55,8 @@ class ExtractedInvoice(BaseModel):
 
     @model_validator(mode="after")
     def _convertible_to_invoice(self) -> "ExtractedInvoice":
-        # Format errors (e.g. a malformed tax ID) must surface here so Instructor re-asks
-        # the model, instead of failing later when converting to `Invoice`.
+        # 格式錯誤（例如統編格式不對）要在這裡爆出來，Instructor 才會重問模型，
+        # 不要等到之後轉成 `Invoice` 時才失敗。
         try:
             self.to_invoice()
         except ValidationError as error:
