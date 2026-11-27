@@ -1,4 +1,4 @@
-"""Schema for a Taiwan uniform invoice (統一發票), used as the LLM extraction target."""
+"""台灣統一發票的領域模型：只放格式約束，業務規則見 `validation/rules.py`。"""
 
 from datetime import date
 from decimal import Decimal

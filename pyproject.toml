@@ -11,11 +11,14 @@ python = "^3.12"
 pydantic = "^2.9"
 pydantic-settings = "^2.6"
 pillow = "^13.0.0"
+instructor = "^1.17.0"
+openai = "^3.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"
 ruff = "^0.8"
 mypy = "^1.13"
+httpx2 = "^2.16"
 
 [tool.ruff]
 line-length = 100
